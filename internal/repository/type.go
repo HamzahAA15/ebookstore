@@ -16,7 +16,7 @@ type IBookRepository interface {
 }
 
 type ICustomerRepository interface {
-	Register(ctx context.Context, customer *model.Customer) error
+	Register(ctx context.Context, customer *model.Customer) (uint, error)
 	GetCustomerByEmail(ctx context.Context, email string) (*model.Customer, error)
 }
 

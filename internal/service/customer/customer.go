@@ -37,22 +37,16 @@ func (s *customerService) Register(ctx context.Context, customer *request.Regist
 		return "", errors.New("failed to generate hashed password")
 	}
 
-	err = s.customerRepository.Register(ctx, &model.Customer{
+	customerID, err := s.customerRepository.Register(ctx, &model.Customer{
 		Email:    email,
 		Password: hashedPass,
 		Username: customer.Username,
 	})
-
 	if err != nil {
 		return "", fmt.Errorf("failed to register customer: %s", err.Error())
 	}
 
-	newCustomer, err := s.customerRepository.GetCustomerByEmail(ctx, email)
-	if err != nil {
-		return "", fmt.Errorf("failed to get new customer: %s", err.Error())
-	}
-
-	token, err := authentication.GenerateToken(newCustomer.Username, newCustomer.Email, newCustomer.ID)
+	token, err := authentication.GenerateToken(customer.Username, email, customerID)
 	if err != nil {
 		return "", fmt.Errorf("failed to generate token: %s", err.Error())
 	}

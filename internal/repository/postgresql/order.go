@@ -4,7 +4,6 @@ import (
 	"context"
 	"ebookstore/internal/model"
 	"ebookstore/internal/repository"
-	"fmt"
 
 	"github.com/jmoiron/sqlx"
 )
@@ -79,15 +78,9 @@ func (o *orderRepository) CreateOrder(ctx context.Context, req model.Order) (uin
 		:airwaybill_number
 	) RETURNING id;`
 
-	query, err := o.db.PrepareNamedContext(ctx, queryStr)
+	err := o.db.QueryRowxContext(ctx, queryStr, req).Scan(&id)
 	if err != nil {
 		return 0, err
-	}
-	defer query.Close()
-
-	err = query.QueryRowxContext(ctx, req).Scan(&id)
-	if err != nil {
-		return 0, fmt.Errorf("failed to create order: %s", err.Error())
 	}
 
 	return id, nil
@@ -107,13 +100,7 @@ func (o *orderRepository) CreateItem(ctx context.Context, item model.Item) error
 		:created_at
 	)`
 
-	query, err := o.db.PrepareNamedContext(ctx, queryStr)
-	if err != nil {
-		return err
-	}
-	defer query.Close()
-
-	_, err = query.ExecContext(ctx, item)
+	_, err := o.db.NamedExecContext(ctx, queryStr, item)
 	if err != nil {
 		return err
 	}
@@ -142,52 +129,18 @@ func (o *orderRepository) GetOrderHistoryByCustomerID(ctx context.Context, cusom
 		WHERE customer_id = $1 AND deleted_at is NULL
 		ORDER By order_date DESC`
 
-	query, err := o.db.PrepareContext(ctx, queryString)
+	err := o.db.SelectContext(ctx, &orders, queryString, cusomterID)
 	if err != nil {
 		return nil, err
-	}
-	defer query.Close()
-
-	ordersRows, err := query.QueryContext(ctx, cusomterID)
-	if err != nil {
-		return nil, err
-	}
-
-	for ordersRows.Next() {
-		var order model.Order
-		err = ordersRows.Scan(
-			&order.ID,
-			&order.CustomerID,
-			&order.CustomerReference,
-			&order.ReceiverName,
-			&order.Address,
-			&order.City,
-			&order.District,
-			&order.PostalCode,
-			&order.Shipper,
-			&order.AirwaybillNumber,
-			&order.OrderDate,
-			&order.TotalItem,
-			&order.TotalPrice,
-		)
-		if err != nil {
-			return nil, err
-		}
-
-		orders = append(orders, order)
 	}
 
 	return orders, nil
 }
 
 func (o *orderRepository) UpdateOrderByOrderID(ctx context.Context, order model.Order) error {
-	query, err := o.db.PrepareContext(ctx, "UPDATE orders SET total_item = $1, total_price = $2 WHERE id = $3")
-	if err != nil {
-		return err
-	}
-	defer query.Close()
+	query := "UPDATE orders SET total_item = $1, total_price = $2 WHERE id = $3"
 
-	_, err = query.ExecContext(ctx, order.TotalItem, order.TotalPrice, order.ID)
+	_, err := o.db.ExecContext(ctx, query, order.TotalItem, order.TotalPrice, order.ID)
 	if err != nil {
 		return err
 	}

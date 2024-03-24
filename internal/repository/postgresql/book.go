@@ -18,7 +18,7 @@ func NewBookRepository(db *sqlx.DB) repository.IBookRepository {
 
 func (r *BookRepository) GetBooks(ctx context.Context) ([]model.Book, error) {
 	var books []model.Book
-	query := "SELECT * FROM books"
+	query := "SELECT id, title, author, price, category_id FROM books WHERE deleted_at IS NULL"
 	if err := r.db.SelectContext(ctx, &books, query); err != nil {
 		return nil, err
 	}
@@ -28,12 +28,11 @@ func (r *BookRepository) GetBooks(ctx context.Context) ([]model.Book, error) {
 
 func (r *BookRepository) GetBookByID(ctx context.Context, id uint) (model.Book, error) {
 	var book model.Book
-	query, err := r.db.PrepareContext(ctx, "SELECT id, title, author, price, category_id FROM books WHERE id = $1 AND deleted_at IS NULL")
+	query := ("SELECT id, title, author, price, category_id FROM books WHERE id = $1 AND deleted_at IS NULL")
+	err := r.db.GetContext(ctx, &book, query, id)
 	if err != nil {
 		return model.Book{}, err
 	}
-	defer query.Close()
 
-	query.QueryRowContext(ctx, id).Scan(&book.ID, &book.Title, &book.Author, &book.Price, &book.CategoryID)
 	return book, nil
 }
