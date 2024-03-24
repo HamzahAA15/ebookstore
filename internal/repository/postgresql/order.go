@@ -53,7 +53,7 @@ func (o *orderRepository) GetItemsByOrderID(ctx context.Context, customerID uint
 
 func (o *orderRepository) CreateOrder(ctx context.Context, req model.Order) (uint, error) {
 	var id uint
-	queryStr := `
+	query := `
 	INSERT INTO orders (
 		customer_id,
 		customer_reference,
@@ -78,7 +78,7 @@ func (o *orderRepository) CreateOrder(ctx context.Context, req model.Order) (uin
 		:airwaybill_number
 	) RETURNING id;`
 
-	err := o.db.QueryRowxContext(ctx, queryStr, req).Scan(&id)
+	err := o.db.QueryRowxContext(ctx, query, req).Scan(&id)
 	if err != nil {
 		return 0, err
 	}
@@ -87,7 +87,7 @@ func (o *orderRepository) CreateOrder(ctx context.Context, req model.Order) (uin
 }
 
 func (o *orderRepository) CreateItem(ctx context.Context, item model.Item) error {
-	queryStr := `
+	query := `
 	INSERT INTO items (
 		book_id,
 		quantity,
@@ -100,7 +100,7 @@ func (o *orderRepository) CreateItem(ctx context.Context, item model.Item) error
 		:created_at
 	)`
 
-	_, err := o.db.NamedExecContext(ctx, queryStr, item)
+	_, err := o.db.NamedExecContext(ctx, query, item)
 	if err != nil {
 		return err
 	}
@@ -110,7 +110,7 @@ func (o *orderRepository) CreateItem(ctx context.Context, item model.Item) error
 
 func (o *orderRepository) GetOrderHistoryByCustomerID(ctx context.Context, cusomterID uint) ([]model.Order, error) {
 	var orders []model.Order
-	queryString := `
+	query := `
 		SELECT 
 			id,
 			customer_id,
@@ -129,7 +129,7 @@ func (o *orderRepository) GetOrderHistoryByCustomerID(ctx context.Context, cusom
 		WHERE customer_id = $1 AND deleted_at is NULL
 		ORDER By order_date DESC`
 
-	err := o.db.SelectContext(ctx, &orders, queryString, cusomterID)
+	err := o.db.SelectContext(ctx, &orders, query, cusomterID)
 	if err != nil {
 		return nil, err
 	}

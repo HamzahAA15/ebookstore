@@ -19,7 +19,8 @@ func NewBookRepository(db *sqlx.DB) repository.IBookRepository {
 func (r *BookRepository) GetBooks(ctx context.Context) ([]model.Book, error) {
 	var books []model.Book
 	query := "SELECT id, title, author, price, category_id FROM books WHERE deleted_at IS NULL"
-	if err := r.db.SelectContext(ctx, &books, query); err != nil {
+	err := r.db.SelectContext(ctx, &books, query)
+	if err != nil {
 		return nil, err
 	}
 
