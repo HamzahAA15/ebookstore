@@ -1,17 +1,17 @@
 package httpservice
 
 import (
-	"ebookstore/internal/service/book"
-	"ebookstore/utils/response"
+	"ebookstore/internal/model/response"
+	"ebookstore/internal/service"
 
 	"github.com/gofiber/fiber/v2"
 )
 
 type BookHandler struct {
-	bookService book.IBookService
+	bookService service.IBookService
 }
 
-func NewBookHandler(bookService book.IBookService) *BookHandler {
+func NewBookHandler(bookService service.IBookService) *BookHandler {
 	return &BookHandler{
 		bookService: bookService,
 	}

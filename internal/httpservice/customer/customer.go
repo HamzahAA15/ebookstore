@@ -1,9 +1,9 @@
 package httpservice
 
 import (
-	"ebookstore/internal/service/customer"
-	"ebookstore/utils/request"
-	"ebookstore/utils/response"
+	"ebookstore/internal/model/request"
+	"ebookstore/internal/model/response"
+	"ebookstore/internal/service"
 	"errors"
 	"regexp"
 	"unicode"
@@ -12,10 +12,10 @@ import (
 )
 
 type CustomerHandler struct {
-	customerService customer.ICustomerService
+	customerService service.ICustomerService
 }
 
-func NewCustomerHandler(customerService customer.ICustomerService) *CustomerHandler {
+func NewCustomerHandler(customerService service.ICustomerService) *CustomerHandler {
 	return &CustomerHandler{
 		customerService: customerService,
 	}

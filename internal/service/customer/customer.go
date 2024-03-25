@@ -3,9 +3,10 @@ package customer
 import (
 	"context"
 	"ebookstore/internal/model"
+	"ebookstore/internal/model/request"
 	"ebookstore/internal/repository"
+	"ebookstore/internal/service"
 	authentication "ebookstore/utils/middleware"
-	"ebookstore/utils/request"
 	"errors"
 	"fmt"
 	"strings"
@@ -15,7 +16,7 @@ type customerService struct {
 	customerRepository repository.ICustomerRepository
 }
 
-func NewCustomerService(customerRepository repository.ICustomerRepository) ICustomerService {
+func NewCustomerService(customerRepository repository.ICustomerRepository) service.ICustomerService {
 	return &customerService{
 		customerRepository: customerRepository,
 	}

@@ -2,8 +2,9 @@ package book
 
 import (
 	"context"
+	"ebookstore/internal/model/response"
 	"ebookstore/internal/repository"
-	"ebookstore/utils/response"
+	"ebookstore/internal/service"
 	"fmt"
 )
 
@@ -13,7 +14,7 @@ type bookService struct {
 	bookRepository repository.IBookRepository
 }
 
-func NewBookService(bookRepository repository.IBookRepository) IBookService {
+func NewBookService(bookRepository repository.IBookRepository) service.IBookService {
 	return &bookService{
 		bookRepository: bookRepository,
 	}

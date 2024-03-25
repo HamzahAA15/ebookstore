@@ -3,9 +3,10 @@ package order
 import (
 	"context"
 	"ebookstore/internal/model"
+	"ebookstore/internal/model/request"
+	"ebookstore/internal/model/response"
 	"ebookstore/internal/repository"
-	"ebookstore/utils/request"
-	"ebookstore/utils/response"
+	"ebookstore/internal/service"
 	"fmt"
 	"math/rand"
 	"time"
@@ -18,7 +19,7 @@ type orderService struct {
 	bookRepository  repository.IBookRepository
 }
 
-func NewOrderService(orderRepository repository.IOrderRepository, bookRepository repository.IBookRepository) IOrderService {
+func NewOrderService(orderRepository repository.IOrderRepository, bookRepository repository.IBookRepository) service.IOrderService {
 	return &orderService{
 		orderRepository: orderRepository,
 		bookRepository:  bookRepository,

@@ -1,11 +1,9 @@
 package httpservice
 
 import (
-	"ebookstore/internal/service/book"
-	"ebookstore/internal/service/customer"
-	"ebookstore/internal/service/order"
-	"ebookstore/utils/request"
-	"ebookstore/utils/response"
+	"ebookstore/internal/model/request"
+	"ebookstore/internal/model/response"
+	"ebookstore/internal/service"
 	"errors"
 	"fmt"
 
@@ -13,12 +11,12 @@ import (
 )
 
 type OrderHandler struct {
-	customerService customer.ICustomerService
-	bookService     book.IBookService
-	orderService    order.IOrderService
+	customerService service.ICustomerService
+	bookService     service.IBookService
+	orderService    service.IOrderService
 }
 
-func NewOrderHandler(customerService customer.ICustomerService, bookService book.IBookService, orderService order.IOrderService) *OrderHandler {
+func NewOrderHandler(customerService service.ICustomerService, bookService service.IBookService, orderService service.IOrderService) *OrderHandler {
 	return &OrderHandler{
 		customerService: customerService,
 		bookService:     bookService,

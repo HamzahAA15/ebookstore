@@ -4,10 +4,11 @@ import (
 	bookHandler "ebookstore/internal/httpservice/book"
 	customerHandler "ebookstore/internal/httpservice/customer"
 	orderHandler "ebookstore/internal/httpservice/order"
-	postgreRepo "ebookstore/internal/repository/postgresql"
-	"ebookstore/internal/service/book"
-	"ebookstore/internal/service/customer"
-	"ebookstore/internal/service/order"
+	bookService "ebookstore/internal/service/book"
+	customerService "ebookstore/internal/service/customer"
+	orderService "ebookstore/internal/service/order"
+
+	"ebookstore/internal/repository/postgresql"
 	authentication "ebookstore/utils/middleware"
 
 	"github.com/gofiber/fiber/v2"
@@ -17,18 +18,18 @@ import (
 func InitRoutes(app *fiber.App, db *sqlx.DB) {
 	auth := authentication.AuthMiddleware()
 
-	bookRepository := postgreRepo.NewBookRepository(db)
-	bookService := book.NewBookService(bookRepository)
+	bookRepository := postgresql.NewBookRepository(db)
+	bookService := bookService.NewBookService(bookRepository)
 	bookHandler := bookHandler.NewBookHandler(bookService)
 	bookHandler.SetupRoutes(app, auth)
 
-	customerRepository := postgreRepo.NewCustomerRepository(db)
-	customerService := customer.NewCustomerService(customerRepository)
+	customerRepository := postgresql.NewCustomerRepository(db)
+	customerService := customerService.NewCustomerService(customerRepository)
 	customerHandler := customerHandler.NewCustomerHandler(customerService)
 	customerHandler.SetupRoutes(app)
 
-	orderRepository := postgreRepo.NewOrderRepository(db)
-	orderService := order.NewOrderService(orderRepository, bookRepository)
+	orderRepository := postgresql.NewOrderRepository(db)
+	orderService := orderService.NewOrderService(orderRepository, bookRepository)
 	orderHandler := orderHandler.NewOrderHandler(customerService, bookService, orderService)
 	orderHandler.SetupRoutes(app, auth)
 }
