@@ -65,7 +65,7 @@ func (o *orderRepository) CreateItem(ctx context.Context, tx *sqlx.Tx, item mode
 		:created_at
 	)`
 
-	_, err := o.db.NamedExecContext(ctx, query, item)
+	_, err := tx.NamedExecContext(ctx, query, item)
 	if err != nil {
 		return err
 	}

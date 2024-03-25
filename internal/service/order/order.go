@@ -118,7 +118,7 @@ func (o *orderService) CreateOrder(ctx context.Context, req request.CreateOrder)
 
 	orderID, err := o.orderRepository.CreateOrder(ctx, tx, order)
 	if err != nil {
-		return response.Order{}, err
+		return response.Order{}, fmt.Errorf("failed to create order: %s", err.Error())
 	}
 
 	for _, item := range req.Items {
@@ -132,7 +132,7 @@ func (o *orderService) CreateOrder(ctx context.Context, req request.CreateOrder)
 			CreatedAt: time.Now().UTC(),
 		})
 		if err != nil {
-			return response.Order{}, err
+			return response.Order{}, fmt.Errorf("failed to create item: %s", err.Error())
 		}
 	}
 
@@ -148,14 +148,14 @@ func (o *orderService) CreateOrder(ctx context.Context, req request.CreateOrder)
 
 	err = o.orderRepository.UpdateOrderByOrderID(ctx, tx, orderUpdate)
 	if err != nil {
-		return response.Order{}, err
+		return response.Order{}, fmt.Errorf("failed to update order: %s", err.Error())
 	}
 
 	data := response.CreateOrderData{
 		OrderID:           orderID,
 		CustomerReference: order.CustomerReference,
 		AirwaybillNumber:  order.AirwaybillNumber,
-		OrderDate:         order.OrderDate,
+		OrderDate:         order.OrderDate.String(),
 	}
 
 	err = tx.Commit()
