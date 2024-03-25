@@ -51,7 +51,29 @@ func (o *orderRepository) GetItemsByOrderID(ctx context.Context, customerID uint
 
 }
 
-func (o *orderRepository) CreateOrder(ctx context.Context, req model.Order) (uint, error) {
+func (o *orderRepository) CreateItem(ctx context.Context, tx *sqlx.Tx, item model.Item) error {
+	query := `
+	INSERT INTO items (
+		book_id,
+		quantity,
+		order_id,
+		created_at
+	) VALUES (
+		:book_id,
+		:quantity,
+		:order_id,
+		:created_at
+	)`
+
+	_, err := o.db.NamedExecContext(ctx, query, item)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (o *orderRepository) CreateOrder(ctx context.Context, tx *sqlx.Tx, req model.Order) (uint, error) {
 	var id uint
 	query := `
 	INSERT INTO orders (
@@ -91,34 +113,12 @@ func (o *orderRepository) CreateOrder(ctx context.Context, req model.Order) (uin
 		req.AirwaybillNumber,
 	}
 
-	err := o.db.QueryRowxContext(ctx, query, args...).Scan(&id)
+	err := tx.QueryRowxContext(ctx, query, args...).Scan(&id)
 	if err != nil {
 		return 0, err
 	}
 
 	return id, nil
-}
-
-func (o *orderRepository) CreateItem(ctx context.Context, item model.Item) error {
-	query := `
-	INSERT INTO items (
-		book_id,
-		quantity,
-		order_id,
-		created_at
-	) VALUES (
-		:book_id,
-		:quantity,
-		:order_id,
-		:created_at
-	)`
-
-	_, err := o.db.NamedExecContext(ctx, query, item)
-	if err != nil {
-		return err
-	}
-
-	return nil
 }
 
 func (o *orderRepository) GetOrderHistoryByCustomerID(ctx context.Context, cusomterID uint) ([]model.Order, error) {
@@ -150,10 +150,10 @@ func (o *orderRepository) GetOrderHistoryByCustomerID(ctx context.Context, cusom
 	return orders, nil
 }
 
-func (o *orderRepository) UpdateOrderByOrderID(ctx context.Context, order model.Order) error {
+func (o *orderRepository) UpdateOrderByOrderID(ctx context.Context, tx *sqlx.Tx, order model.Order) error {
 	query := "UPDATE orders SET total_item = $1, total_price = $2 WHERE id = $3"
 
-	_, err := o.db.ExecContext(ctx, query, order.TotalItem, order.TotalPrice, order.ID)
+	_, err := tx.ExecContext(ctx, query, order.TotalItem, order.TotalPrice, order.ID)
 	if err != nil {
 		return err
 	}

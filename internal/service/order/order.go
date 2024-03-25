@@ -7,6 +7,7 @@ import (
 	"ebookstore/internal/model/response"
 	"ebookstore/internal/repository"
 	"ebookstore/internal/service"
+	"ebookstore/utils/transactioner"
 	"fmt"
 	"math/rand"
 	"time"
@@ -15,14 +16,16 @@ import (
 )
 
 type orderService struct {
-	orderRepository repository.IOrderRepository
-	bookRepository  repository.IBookRepository
+	orderRepository     repository.IOrderRepository
+	TransactionProvider transactioner.TransactionProvider
+	bookRepository      repository.IBookRepository
 }
 
-func NewOrderService(orderRepository repository.IOrderRepository, bookRepository repository.IBookRepository) service.IOrderService {
+func NewOrderService(orderRepository repository.IOrderRepository, bookRepository repository.IBookRepository, tx transactioner.TransactionProvider) service.IOrderService {
 	return &orderService{
-		orderRepository: orderRepository,
-		bookRepository:  bookRepository,
+		orderRepository:     orderRepository,
+		bookRepository:      bookRepository,
+		TransactionProvider: tx,
 	}
 }
 
@@ -87,6 +90,12 @@ func (o *orderService) CreateOrder(ctx context.Context, req request.CreateOrder)
 	var totalPrice float64
 	var totalQuantity int
 
+	tx, err := o.TransactionProvider.NewTransaction(ctx)
+	if err != nil {
+		return response.Order{}, fmt.Errorf("failed to start transaction: %s", err.Error())
+	}
+	defer tx.Rollback()
+
 	//insert data to order
 	var order model.Order
 	customerID := ctx.Value("id").(uint)
@@ -106,7 +115,8 @@ func (o *orderService) CreateOrder(ctx context.Context, req request.CreateOrder)
 	order.PostalCode = req.PostalCode
 	order.Shipper = req.Shipper
 	order.AirwaybillNumber = generateAirwaybillNumber(req.Shipper)
-	orderID, err := o.orderRepository.CreateOrder(ctx, order)
+
+	orderID, err := o.orderRepository.CreateOrder(ctx, tx, order)
 	if err != nil {
 		return response.Order{}, err
 	}
@@ -115,7 +125,7 @@ func (o *orderService) CreateOrder(ctx context.Context, req request.CreateOrder)
 		totalPrice += item.Price * float64(item.Quantity)
 		totalQuantity += item.Quantity
 
-		err = o.orderRepository.CreateItem(ctx, model.Item{
+		err = o.orderRepository.CreateItem(ctx, tx, model.Item{
 			BookID:    item.BookID,
 			Quantity:  item.Quantity,
 			OrderID:   orderID,
@@ -136,7 +146,7 @@ func (o *orderService) CreateOrder(ctx context.Context, req request.CreateOrder)
 	orderUpdate.TotalPrice = totalPrice
 	orderUpdate.UpdatedAt = pq.NullTime{Time: time.Now().UTC(), Valid: true}
 
-	err = o.orderRepository.UpdateOrderByOrderID(ctx, orderUpdate)
+	err = o.orderRepository.UpdateOrderByOrderID(ctx, tx, orderUpdate)
 	if err != nil {
 		return response.Order{}, err
 	}
@@ -146,6 +156,11 @@ func (o *orderService) CreateOrder(ctx context.Context, req request.CreateOrder)
 		CustomerReference: order.CustomerReference,
 		AirwaybillNumber:  order.AirwaybillNumber,
 		OrderDate:         order.OrderDate,
+	}
+
+	err = tx.Commit()
+	if err != nil {
+		return response.Order{}, fmt.Errorf("failed to commit transaction: %s", err.Error())
 	}
 
 	return response.Order{

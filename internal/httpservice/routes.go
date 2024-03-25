@@ -10,6 +10,7 @@ import (
 
 	"ebookstore/internal/repository/postgresql"
 	authentication "ebookstore/utils/middleware"
+	"ebookstore/utils/transactioner"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/jmoiron/sqlx"
@@ -29,7 +30,8 @@ func InitRoutes(app *fiber.App, db *sqlx.DB) {
 	customerHandler.SetupRoutes(app)
 
 	orderRepository := postgresql.NewOrderRepository(db)
-	orderService := orderService.NewOrderService(orderRepository, bookRepository)
+	orderTxProvider := transactioner.NewTransactionProvider(db)
+	orderService := orderService.NewOrderService(orderRepository, bookRepository, orderTxProvider)
 	orderHandler := orderHandler.NewOrderHandler(customerService, bookService, orderService)
 	orderHandler.SetupRoutes(app, auth)
 }
