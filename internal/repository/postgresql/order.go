@@ -66,19 +66,32 @@ func (o *orderRepository) CreateOrder(ctx context.Context, req model.Order) (uin
 		shipper,
 		airwaybill_number
 	) VALUES (
-		:customer_id,
-		:customer_reference,
-		:receiver_name,
-		:address,
-		:city,
-		:district,
-		:postal_code,
-		:order_date,
-		:shipper,
-		:airwaybill_number
+		$1,
+		$2,
+		$3,
+		$4,
+		$5,
+		$6,
+		$7,
+		$8,
+		$9,
+		$10
 	) RETURNING id;`
 
-	err := o.db.QueryRowxContext(ctx, query, req).Scan(&id)
+	var args = []interface{}{
+		req.CustomerID,
+		req.CustomerReference,
+		req.ReceiverName,
+		req.Address,
+		req.City,
+		req.District,
+		req.PostalCode,
+		req.OrderDate,
+		req.Shipper,
+		req.AirwaybillNumber,
+	}
+
+	err := o.db.QueryRowxContext(ctx, query, args...).Scan(&id)
 	if err != nil {
 		return 0, err
 	}

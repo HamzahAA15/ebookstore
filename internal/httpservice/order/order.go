@@ -45,7 +45,6 @@ func (h *OrderHandler) CreateOrder(c *fiber.Ctx) error {
 		})
 	}
 
-	fmt.Printf("%+v", req)
 	resp, err := h.orderService.CreateOrder(c.Context(), req)
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(response.Order{
@@ -57,9 +56,8 @@ func (h *OrderHandler) CreateOrder(c *fiber.Ctx) error {
 	customer := c.Locals("username").(string)
 	return c.Status(fiber.StatusOK).JSON(response.Order{
 		StatusCode: fiber.StatusOK,
-		Message:    fmt.Sprintf("successfully created order for %s", customer),
-		TotalItem:  resp.TotalItem,
-		TotalPrice: resp.TotalPrice,
+		Message:    fmt.Sprintf("successfully created order for customer %s", customer),
+		Data:       resp.Data,
 	})
 }
 
@@ -82,10 +80,6 @@ func (h *OrderHandler) GetUserOrders(c *fiber.Ctx) error {
 func isValidCreateOrderReq(req request.CreateOrder) error {
 	if len(req.Items) == 0 {
 		return errors.New("items cannot be empty")
-	}
-
-	if req.ReceiverName == "" {
-		return errors.New("receiver name cannot be empty")
 	}
 
 	if req.Address == "" {

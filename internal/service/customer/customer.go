@@ -42,6 +42,7 @@ func (s *customerService) Register(ctx context.Context, customer *request.Regist
 		Password: hashedPass,
 		Username: customer.Username,
 	})
+
 	if err != nil {
 		return "", fmt.Errorf("failed to register customer: %s", err.Error())
 	}

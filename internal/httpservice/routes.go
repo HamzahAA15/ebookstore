@@ -1,38 +1,20 @@
 package httpservice
 
 import (
-	"context"
 	bookHandler "ebookstore/internal/httpservice/book"
 	customerHandler "ebookstore/internal/httpservice/customer"
 	orderHandler "ebookstore/internal/httpservice/order"
-	"ebookstore/internal/repository"
 	postgreRepo "ebookstore/internal/repository/postgresql"
 	"ebookstore/internal/service/book"
 	"ebookstore/internal/service/customer"
 	"ebookstore/internal/service/order"
 	authentication "ebookstore/utils/middleware"
-	"fmt"
 
 	"github.com/gofiber/fiber/v2"
+	"github.com/jmoiron/sqlx"
 )
 
-const (
-	host     = "localhost"
-	port     = 5432
-	user     = "root"
-	password = "password"
-	dbname   = "book_db"
-)
-
-func InitRoutes(app *fiber.App) {
-	psqlInfo := fmt.Sprintf("host=%s port=%d user=%s "+
-		"password=%s dbname=%s sslmode=disable", host, port, user, password, dbname)
-
-	db, err := repository.ConnectPostgres(context.Background(), psqlInfo)
-	if err != nil {
-		panic(err)
-	}
-
+func InitRoutes(app *fiber.App, db *sqlx.DB) {
 	auth := authentication.AuthMiddleware()
 
 	bookRepository := postgreRepo.NewBookRepository(db)

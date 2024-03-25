@@ -15,3 +15,8 @@ type Book struct {
 	CreatedAt  time.Time   `db:"created_at"`
 	DeletedAt  pq.NullTime `db:"deleted_at"`
 }
+
+type Category struct {
+	ID   uint   `db:"id"`
+	Name string `db:"name"`
+}

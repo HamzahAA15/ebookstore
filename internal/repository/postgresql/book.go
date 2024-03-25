@@ -37,3 +37,14 @@ func (r *BookRepository) GetBookByID(ctx context.Context, id uint) (model.Book, 
 
 	return book, nil
 }
+
+func (r *BookRepository) GetCategoryByID(ctx context.Context, id uint) (model.Category, error) {
+	var category model.Category
+	query := ("SELECT id, name FROM categories WHERE id = $1")
+	err := r.db.GetContext(ctx, &category, query, id)
+	if err != nil {
+		return model.Category{}, err
+	}
+
+	return category, nil
+}

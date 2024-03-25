@@ -89,10 +89,16 @@ func (o *orderService) CreateOrder(ctx context.Context, req request.CreateOrder)
 	//insert data to order
 	var order model.Order
 	customerID := ctx.Value("id").(uint)
+
+	if req.ReceiverName == "" {
+		userName := ctx.Value("username").(string)
+		req.ReceiverName = userName
+	}
+
+	order.ReceiverName = req.ReceiverName
 	order.CustomerID = customerID
 	order.OrderDate = time.Now().UTC()
 	order.CustomerReference = generateCustomerReference(order.OrderDate)
-	order.ReceiverName = req.ReceiverName
 	order.Address = req.Address
 	order.City = req.City
 	order.District = req.District
@@ -105,7 +111,7 @@ func (o *orderService) CreateOrder(ctx context.Context, req request.CreateOrder)
 	}
 
 	for _, item := range req.Items {
-		totalPrice += item.Price
+		totalPrice += item.Price * float64(item.Quantity)
 		totalQuantity += item.Quantity
 
 		err = o.orderRepository.CreateItem(ctx, model.Item{
@@ -134,9 +140,15 @@ func (o *orderService) CreateOrder(ctx context.Context, req request.CreateOrder)
 		return response.Order{}, err
 	}
 
+	data := response.CreateOrderData{
+		OrderID:           orderID,
+		CustomerReference: order.CustomerReference,
+		AirwaybillNumber:  order.AirwaybillNumber,
+		OrderDate:         order.OrderDate,
+	}
+
 	return response.Order{
-		TotalItem:  totalQuantity,
-		TotalPrice: totalPrice,
+		Data: data,
 	}, nil
 }
 

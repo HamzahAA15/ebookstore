@@ -13,6 +13,8 @@ import (
 type IBookRepository interface {
 	GetBooks(ctx context.Context) ([]model.Book, error)
 	GetBookByID(ctx context.Context, id uint) (model.Book, error)
+
+	GetCategoryByID(ctx context.Context, id uint) (model.Category, error)
 }
 
 type ICustomerRepository interface {

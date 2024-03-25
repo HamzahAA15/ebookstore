@@ -18,8 +18,8 @@ func NewCustomerRepository(db *sqlx.DB) repository.ICustomerRepository {
 
 func (c *customerRepository) Register(ctx context.Context, customer *model.Customer) (uint, error) {
 	var id uint
-	query := "INSERT INTO customers (email, password, username) VALUES (:email, :password, :username) RETURNING id;"
-	err := c.db.QueryRowxContext(ctx, query, customer).Scan(&id)
+	query := "INSERT INTO customers (email, password, username) VALUES ($1, $2, $3) RETURNING id;"
+	err := c.db.QueryRowxContext(ctx, query, customer.Email, customer.Password, customer.Username).Scan(&id)
 	if err != nil {
 		return 0, err
 

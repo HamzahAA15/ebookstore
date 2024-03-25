@@ -3,10 +3,16 @@ package response
 import "time"
 
 type Order struct {
-	StatusCode int     `json:"status_code"`
-	Message    string  `json:"message"`
-	TotalItem  int     `json:"total_item,omitempty"`
-	TotalPrice float64 `json:"total_price,omitempty"`
+	StatusCode int             `json:"status_code"`
+	Message    string          `json:"message"`
+	Data       CreateOrderData `json:"data"`
+}
+
+type CreateOrderData struct {
+	OrderID           uint      `json:"order_id"`
+	CustomerReference string    `json:"customer_reference"`
+	AirwaybillNumber  string    `json:"airwaybill_number"`
+	OrderDate         time.Time `json:"order_date"`
 }
 
 type GetUserOrders struct {

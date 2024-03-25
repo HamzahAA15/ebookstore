@@ -1,0 +1,26 @@
+version: '3.8'
+services:
+  ebookstore-api:
+    restart: unless-stopped
+    build: .
+    ports:
+      - "8080:8080"
+    depends_on:
+      - postgres
+  
+  postgres:
+    image: postgres:latest
+    container_name: postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: root
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: book_db
+    ports:
+      - 5432:5432
+    volumes:
+      - postgres-data:/data/db #postgres-data:/data/db postgres-data:/var/lib/postgresql/data
+
+volumes:
+  postgres-data:
+
