@@ -1,8 +1,9 @@
-package postgresql
+package postgresql_test
 
 import (
 	"context"
 	"ebookstore/internal/model"
+	"ebookstore/internal/repository/postgresql"
 	"errors"
 	"testing"
 
@@ -71,7 +72,7 @@ func TestBookRepository_GetBooks(t *testing.T) {
 			defer db.Close()
 
 			sqlxDB := sqlx.NewDb(db, "sqlmock")
-			testDB := NewBookRepository(sqlxDB)
+			testDB := postgresql.NewBookRepository(sqlxDB)
 
 			query := "SELECT id, title, author, price, category_id FROM books WHERE deleted_at IS NULL"
 
@@ -154,11 +155,11 @@ func TestBookRepository_GetBookByID(t *testing.T) {
 			defer db.Close()
 
 			sqlxDB := sqlx.NewDb(db, "sqlmock")
-			testDB := NewBookRepository(sqlxDB)
+			testDB := postgresql.NewBookRepository(sqlxDB)
 
 			query := "SELECT id, title, author, price, category_id FROM books WHERE id = $1 AND deleted_at IS NULL"
 
-			mockExpectQuery := m.ExpectQuery(query)
+			mockExpectQuery := m.ExpectQuery(query).WithArgs(tt.args.id)
 			if tt.fields.err != nil {
 				mockExpectQuery.WillReturnError(err)
 			} else {
@@ -233,11 +234,11 @@ func TestBookRepository_GetCategoryByID(t *testing.T) {
 			defer db.Close()
 
 			sqlxDB := sqlx.NewDb(db, "sqlmock")
-			testDB := NewBookRepository(sqlxDB)
+			testDB := postgresql.NewBookRepository(sqlxDB)
 
 			query := "SELECT id, name FROM categories WHERE id = $1"
 
-			mockExpectQuery := m.ExpectQuery(query)
+			mockExpectQuery := m.ExpectQuery(query).WithArgs(tt.args.id)
 			if tt.fields.err != nil {
 				mockExpectQuery.WillReturnError(err)
 			} else {
