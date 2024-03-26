@@ -16,10 +16,10 @@ func NewOrderRepository(db *sqlx.DB) repository.IOrderRepository {
 	return &orderRepository{db: db}
 }
 
-func (o *orderRepository) GetItemsByOrderID(ctx context.Context, customerID uint) ([]model.Item, error) {
+func (o *orderRepository) GetItemsByOrderID(ctx context.Context, OrderID uint) ([]model.Item, error) {
 
 	var items []model.Item
-	queryString := `
+	queryString := ` 
 		SELECT
 			id,
 			book_id,
@@ -28,13 +28,7 @@ func (o *orderRepository) GetItemsByOrderID(ctx context.Context, customerID uint
 		FROM items
 		WHERE order_id = $1`
 
-	query, err := o.db.PrepareContext(ctx, queryString)
-	if err != nil {
-		return nil, err
-	}
-	defer query.Close()
-
-	itemsRows, err := query.QueryContext(ctx, customerID)
+	itemsRows, err := o.db.QueryContext(ctx, queryString, OrderID)
 	if err != nil {
 		return nil, err
 	}
@@ -52,20 +46,9 @@ func (o *orderRepository) GetItemsByOrderID(ctx context.Context, customerID uint
 }
 
 func (o *orderRepository) CreateItem(ctx context.Context, tx *sqlx.Tx, item model.Item) error {
-	query := `
-	INSERT INTO items (
-		book_id,
-		quantity,
-		order_id,
-		created_at
-	) VALUES (
-		:book_id,
-		:quantity,
-		:order_id,
-		:created_at
-	)`
+	query := "INSERT INTO items (book_id,quantity,order_id,created_at) VALUES ($1,$2,$3,$4)"
 
-	_, err := tx.NamedExecContext(ctx, query, item)
+	_, err := tx.ExecContext(ctx, query, item.BookID, item.Quantity, item.OrderID, item.CreatedAt)
 	if err != nil {
 		return err
 	}

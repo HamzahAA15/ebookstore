@@ -15,6 +15,8 @@ import (
 	"github.com/lib/pq"
 )
 
+var mapBook = make(map[uint]float64)
+
 type orderService struct {
 	orderRepository     repository.IOrderRepository
 	TransactionProvider transactioner.TransactionProvider
@@ -116,15 +118,30 @@ func (o *orderService) CreateOrder(ctx context.Context, req request.CreateOrder)
 	order.Shipper = req.Shipper
 	order.AirwaybillNumber = generateAirwaybillNumber(req.Shipper)
 
+	//create order
 	orderID, err := o.orderRepository.CreateOrder(ctx, tx, order)
 	if err != nil {
 		return response.Order{}, fmt.Errorf("failed to create order: %s", err.Error())
 	}
 
 	for _, item := range req.Items {
-		totalPrice += item.Price * float64(item.Quantity)
+		//get book price from inMemory Cache first
+		bookPrice, ok := mapBook[item.BookID]
+		if !ok {
+			book, err := o.bookRepository.GetBookByID(ctx, item.BookID)
+			if err != nil {
+				return response.Order{}, fmt.Errorf("failed to get book: %s", err.Error())
+			}
+
+			bookPrice = book.Price
+			mapBook[item.BookID] = bookPrice
+		}
+
+		//set total price & quantity
+		totalPrice += bookPrice * float64(item.Quantity)
 		totalQuantity += item.Quantity
 
+		//create item
 		err = o.orderRepository.CreateItem(ctx, tx, model.Item{
 			BookID:    item.BookID,
 			Quantity:  item.Quantity,
@@ -136,16 +153,13 @@ func (o *orderService) CreateOrder(ctx context.Context, req request.CreateOrder)
 		}
 	}
 
-	if err != nil {
-		return response.Order{}, err
-	}
-
 	var orderUpdate model.Order
 	orderUpdate.ID = orderID
 	orderUpdate.TotalItem = totalQuantity
 	orderUpdate.TotalPrice = totalPrice
 	orderUpdate.UpdatedAt = pq.NullTime{Time: time.Now().UTC(), Valid: true}
 
+	//update order
 	err = o.orderRepository.UpdateOrderByOrderID(ctx, tx, orderUpdate)
 	if err != nil {
 		return response.Order{}, fmt.Errorf("failed to update order: %s", err.Error())

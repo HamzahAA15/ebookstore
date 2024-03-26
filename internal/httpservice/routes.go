@@ -22,7 +22,7 @@ func InitRoutes(app *fiber.App, db *sqlx.DB) {
 	bookRepository := postgresql.NewBookRepository(db)
 	bookService := bookService.NewBookService(bookRepository)
 	bookHandler := bookHandler.NewBookHandler(bookService)
-	bookHandler.SetupRoutes(app, auth)
+	bookHandler.SetupRoutes(app)
 
 	customerRepository := postgresql.NewCustomerRepository(db)
 	customerService := customerService.NewCustomerService(customerRepository)

@@ -11,7 +11,6 @@ type CreateOrder struct {
 }
 
 type Item struct {
-	BookID   uint    `json:"book_id"`
-	Quantity int     `json:"quantity"`
-	Price    float64 `json:"price"`
+	BookID   uint `json:"book_id"`
+	Quantity int  `json:"quantity"`
 }
