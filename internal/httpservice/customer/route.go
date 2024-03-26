@@ -1,4 +1,4 @@
-package httpservice
+package customer
 
 import "github.com/gofiber/fiber/v2"
 

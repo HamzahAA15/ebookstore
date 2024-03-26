@@ -43,7 +43,7 @@ func (_m *ICustomerService) Login(ctx context.Context, customer request.Login) (
 }
 
 // Register provides a mock function with given fields: ctx, customer
-func (_m *ICustomerService) Register(ctx context.Context, customer *request.Register) (string, error) {
+func (_m *ICustomerService) Register(ctx context.Context, customer request.Register) (string, error) {
 	ret := _m.Called(ctx, customer)
 
 	if len(ret) == 0 {
@@ -52,16 +52,16 @@ func (_m *ICustomerService) Register(ctx context.Context, customer *request.Regi
 
 	var r0 string
 	var r1 error
-	if rf, ok := ret.Get(0).(func(context.Context, *request.Register) (string, error)); ok {
+	if rf, ok := ret.Get(0).(func(context.Context, request.Register) (string, error)); ok {
 		return rf(ctx, customer)
 	}
-	if rf, ok := ret.Get(0).(func(context.Context, *request.Register) string); ok {
+	if rf, ok := ret.Get(0).(func(context.Context, request.Register) string); ok {
 		r0 = rf(ctx, customer)
 	} else {
 		r0 = ret.Get(0).(string)
 	}
 
-	if rf, ok := ret.Get(1).(func(context.Context, *request.Register) error); ok {
+	if rf, ok := ret.Get(1).(func(context.Context, request.Register) error); ok {
 		r1 = rf(ctx, customer)
 	} else {
 		r1 = ret.Error(1)

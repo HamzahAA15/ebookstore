@@ -1,4 +1,4 @@
-package httpservice
+package book
 
 import (
 	"ebookstore/internal/model/response"

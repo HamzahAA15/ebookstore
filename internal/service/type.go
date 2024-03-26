@@ -7,7 +7,7 @@ import (
 )
 
 type ICustomerService interface {
-	Register(ctx context.Context, customer *request.Register) (string, error)
+	Register(ctx context.Context, customer request.Register) (string, error)
 	Login(ctx context.Context, customer request.Login) (string, error)
 }
 

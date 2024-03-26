@@ -22,14 +22,14 @@ func NewCustomerService(customerRepository repository.ICustomerRepository) servi
 	}
 }
 
-func (s *customerService) Register(ctx context.Context, customer *request.Register) (string, error) {
+func (s *customerService) Register(ctx context.Context, customer request.Register) (string, error) {
 	email := strings.ToLower(customer.Email)
 	customerDB, err := s.customerRepository.GetCustomerByEmail(ctx, email)
 	if err != nil {
 		return "", fmt.Errorf("failed to get email existing: %s", err.Error())
 	}
 
-	if email == customerDB.Email {
+	if customerDB != nil && customerDB.Email == email {
 		return "", errors.New("email already exists")
 	}
 

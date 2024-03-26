@@ -1,4 +1,4 @@
-package httpservice
+package customer
 
 import (
 	"ebookstore/internal/model/request"
@@ -25,8 +25,8 @@ func (h *CustomerHandler) Register(c *fiber.Ctx) error {
 	customer := request.Register{}
 	err := c.BodyParser(&customer)
 	if err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(response.Customer{
-			StatusCode: fiber.StatusInternalServerError,
+		return c.Status(fiber.StatusBadRequest).JSON(response.Customer{
+			StatusCode: fiber.StatusBadRequest,
 			Message:    err.Error(),
 		})
 	}
@@ -39,7 +39,7 @@ func (h *CustomerHandler) Register(c *fiber.Ctx) error {
 		})
 	}
 
-	token, err := h.customerService.Register(c.Context(), &customer)
+	token, err := h.customerService.Register(c.Context(), customer)
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(response.Customer{
 			StatusCode: fiber.StatusInternalServerError,
@@ -58,8 +58,8 @@ func (h *CustomerHandler) Login(c *fiber.Ctx) error {
 	login := request.Login{}
 	err := c.BodyParser(&login)
 	if err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(response.Customer{
-			StatusCode: fiber.StatusInternalServerError,
+		return c.Status(fiber.StatusBadRequest).JSON(response.Customer{
+			StatusCode: fiber.StatusBadRequest,
 			Message:    err.Error(),
 		})
 	}
