@@ -9,17 +9,20 @@ import (
 	orderService "ebookstore/internal/service/order"
 
 	"ebookstore/internal/repository/postgresql"
+	"ebookstore/utils/config"
 	authentication "ebookstore/utils/middleware"
+	"ebookstore/utils/notification"
 	"ebookstore/utils/transactioner"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/jmoiron/sqlx"
+	"gopkg.in/gomail.v2"
 )
 
 func InitRoutes(app *fiber.App, db *sqlx.DB) {
 	auth := authentication.AuthMiddleware()
-	// gmailSMTP := gomail.NewDialer(config.CONFIG_SMTP_HOST, config.CONFIG_SMTP_PORT, config.CONFIG_AUTH_EMAIL, config.CONFIG_AUTH_PASSWORD)
-	// notificationService := notification.NewGmailNotification(gmailSMTP)
+	gmailSMTP := gomail.NewDialer(config.CONFIG_SMTP_HOST, config.CONFIG_SMTP_PORT, config.CONFIG_AUTH_EMAIL, config.CONFIG_AUTH_PASSWORD)
+	notificationService := notification.NewGmailNotification(gmailSMTP)
 
 	bookRepository := postgresql.NewBookRepository(db)
 	bookService := bookService.NewBookService(bookRepository)
@@ -27,13 +30,13 @@ func InitRoutes(app *fiber.App, db *sqlx.DB) {
 	bookHandler.SetupRoutes(app)
 
 	customerRepository := postgresql.NewCustomerRepository(db)
-	customerService := customerService.NewCustomerService(customerRepository)
+	customerService := customerService.NewCustomerService(customerRepository, notificationService)
 	customerHandler := customerHandler.NewCustomerHandler(customerService)
 	customerHandler.SetupRoutes(app)
 
 	orderRepository := postgresql.NewOrderRepository(db)
 	orderTxProvider := transactioner.NewTransactionProvider(db)
-	orderService := orderService.NewOrderService(orderRepository, bookRepository, orderTxProvider)
+	orderService := orderService.NewOrderService(orderRepository, bookRepository, orderTxProvider, notificationService)
 	orderHandler := orderHandler.NewOrderHandler(orderService)
 	orderHandler.SetupRoutes(app, auth)
 }

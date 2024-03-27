@@ -37,6 +37,8 @@ const OrderBodyEmailTemplate = `<p>Dear %s,</p>
 <p>Your order with ID: %d has been successfully created.</p>
 <p>Order Details:</p>
 <ul>
+  <li>total item: %d</li>
+  <li>total price: %f</li>
   <li>Customer Reference: %s</li>
   <li>Order Date: %s</li>
   <li>Airwaybill Number: %s</li>

@@ -6,6 +6,7 @@ import (
 	"ebookstore/internal/model/request"
 	"ebookstore/internal/repository/mocks"
 	"ebookstore/internal/service/customer"
+	mocksService "ebookstore/internal/service/mocks"
 	"errors"
 	"testing"
 
@@ -20,7 +21,8 @@ func Test_customerService_Register(t *testing.T) {
 		Username: "username",
 	}
 	type fields struct {
-		customerRepository mocks.ICustomerRepository
+		customerRepository  mocks.ICustomerRepository
+		notificationService mocksService.INotificationService
 	}
 	type args struct {
 		ctx      context.Context
@@ -40,6 +42,11 @@ func Test_customerService_Register(t *testing.T) {
 					m.On("GetCustomerByEmail", mock.Anything, customerReq.Email).Return(nil, nil)
 					customerReq.Password = mock.Anything
 					m.On("Register", mock.Anything, mock.Anything).Return(uint(1), nil)
+					return m
+				}(),
+				notificationService: func() mocksService.INotificationService {
+					m := mocksService.INotificationService{}
+					m.On("SendEmail", mock.Anything, mock.Anything).Return(nil)
 					return m
 				}(),
 			},
@@ -100,7 +107,7 @@ func Test_customerService_Register(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			s := customer.NewCustomerService(&tt.fields.customerRepository)
+			s := customer.NewCustomerService(&tt.fields.customerRepository, &tt.fields.notificationService)
 			_, err := s.Register(tt.args.ctx, tt.args.customer)
 			assert.Equal(t, tt.wantErr, err != nil)
 		})
@@ -109,7 +116,8 @@ func Test_customerService_Register(t *testing.T) {
 
 func Test_customerService_Login(t *testing.T) {
 	type fields struct {
-		customerRepository mocks.ICustomerRepository
+		customerRepository  mocks.ICustomerRepository
+		notificationService mocksService.INotificationService
 	}
 	type args struct {
 		ctx      context.Context
@@ -130,6 +138,11 @@ func Test_customerService_Login(t *testing.T) {
 						Email:    "email",
 						Password: "$2a$12$KptVrUIFh4qX5.b8fHNjK.n1U749q8q86DtGxUFbEwbSUymQ./zty",
 					}, nil)
+					return m
+				}(),
+				notificationService: func() mocksService.INotificationService {
+					m := mocksService.INotificationService{}
+					m.On("SendEmail", mock.Anything, mock.Anything).Return(nil)
 					return m
 				}(),
 			},
@@ -202,7 +215,7 @@ func Test_customerService_Login(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			s := customer.NewCustomerService(&tt.fields.customerRepository)
+			s := customer.NewCustomerService(&tt.fields.customerRepository, &tt.fields.notificationService)
 			_, err := s.Login(tt.args.ctx, tt.args.customer)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("customerService.Login() error = %v, wantErr %v", err, tt.wantErr)

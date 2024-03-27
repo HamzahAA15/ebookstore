@@ -6,6 +6,7 @@ import (
 	"ebookstore/internal/model/request"
 	"ebookstore/internal/model/response"
 	"ebookstore/internal/repository/mocks"
+	mocksService "ebookstore/internal/service/mocks"
 	"ebookstore/internal/service/order"
 	"errors"
 	"testing"
@@ -73,7 +74,9 @@ func Test_orderService_GetUserOrders(t *testing.T) {
 		orderRepository     mocks.IOrderRepository
 		TransactionProvider mocks.ITransactionProvider
 		bookRepository      mocks.IBookRepository
+		notificationService mocksService.INotificationService
 	}
+
 	type args struct {
 		ctx context.Context
 	}
@@ -169,7 +172,7 @@ func Test_orderService_GetUserOrders(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			o := order.NewOrderService(&tt.fields.orderRepository, &tt.fields.bookRepository, &tt.fields.TransactionProvider)
+			o := order.NewOrderService(&tt.fields.orderRepository, &tt.fields.bookRepository, &tt.fields.TransactionProvider, &tt.fields.notificationService)
 			got, err := o.GetUserOrders(tt.args.ctx)
 			assert.Equal(t, tt.wantErr, err != nil)
 			assert.Equal(t, tt.want, got)
@@ -225,16 +228,20 @@ func Test_orderService_CreateOrder(t *testing.T) {
 	ctx := context.Background()
 	id := uint(1)
 	ctx = context.WithValue(ctx, "id", id)
+	ctx = context.WithValue(ctx, "email", "mail@mail.com")
 
 	type fields struct {
 		orderRepository     mocks.IOrderRepository
 		TransactionProvider mocks.ITransactionProvider
 		bookRepository      mocks.IBookRepository
+		notificationService mocksService.INotificationService
 	}
+
 	type args struct {
 		ctx context.Context
 		req request.CreateOrder
 	}
+
 	tests := []struct {
 		name    string
 		fields  fields
@@ -267,6 +274,11 @@ func Test_orderService_CreateOrder(t *testing.T) {
 				bookRepository: func() mocks.IBookRepository {
 					m := mocks.IBookRepository{}
 					m.On("GetBookByID", mock.Anything, item.BookID).Return(book, nil)
+					return m
+				}(),
+				notificationService: func() mocksService.INotificationService {
+					m := mocksService.INotificationService{}
+					m.On("SendNotification", mock.Anything, mock.Anything, mock.Anything).Return(nil)
 					return m
 				}(),
 			},
@@ -325,7 +337,7 @@ func Test_orderService_CreateOrder(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			o := order.NewOrderService(&tt.fields.orderRepository, &tt.fields.bookRepository, &tt.fields.TransactionProvider)
+			o := order.NewOrderService(&tt.fields.orderRepository, &tt.fields.bookRepository, &tt.fields.TransactionProvider, &tt.fields.notificationService)
 			got, err := o.CreateOrder(tt.args.ctx, tt.args.req)
 			if err != nil {
 				println(err.Error())

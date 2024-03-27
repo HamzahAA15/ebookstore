@@ -7,8 +7,11 @@ import (
 	"ebookstore/internal/model/response"
 	"ebookstore/internal/repository"
 	"ebookstore/internal/service"
+	"ebookstore/utils/config"
+	"ebookstore/utils/notification"
 	"ebookstore/utils/transactioner"
 	"fmt"
+	"log"
 	"math/rand"
 	"time"
 
@@ -21,15 +24,15 @@ type orderService struct {
 	orderRepository     repository.IOrderRepository
 	TransactionProvider transactioner.ITransactionProvider
 	bookRepository      repository.IBookRepository
-	// notificationService notification.INotificationService
+	notificationService notification.INotificationService
 }
 
-func NewOrderService(orderRepository repository.IOrderRepository, bookRepository repository.IBookRepository, tx transactioner.ITransactionProvider) service.IOrderService {
+func NewOrderService(orderRepository repository.IOrderRepository, bookRepository repository.IBookRepository, tx transactioner.ITransactionProvider, notificationService notification.INotificationService) service.IOrderService {
 	return &orderService{
 		orderRepository:     orderRepository,
 		bookRepository:      bookRepository,
 		TransactionProvider: tx,
-		// notificationService: notificationService,
+		notificationService: notificationService,
 	}
 }
 
@@ -94,7 +97,7 @@ func (o *orderService) CreateOrder(ctx context.Context, req request.CreateOrder)
 	var totalPrice float64
 	var totalQuantity int
 	customerID := ctx.Value("id").(uint)
-	// customerEmail := ctx.Value("email").(string)
+	customerEmail := ctx.Value("email").(string)
 	var order model.Order
 
 	tx, err := o.TransactionProvider.NewTransaction(ctx)
@@ -164,6 +167,19 @@ func (o *orderService) CreateOrder(ctx context.Context, req request.CreateOrder)
 	err = o.orderRepository.UpdateOrderByOrderID(ctx, tx, order)
 	if err != nil {
 		return response.CreateOrderData{}, fmt.Errorf("failed to update order: %s", err.Error())
+	}
+	log.Println("zxc", config.CONFIG_EMAIL_SERVICE)
+	//send email
+	if config.CONFIG_EMAIL_SERVICE {
+		bodyEmail := fmt.Sprintf(model.OrderBodyEmailTemplate, customerEmail, orderID, totalQuantity, totalPrice, order.CustomerReference, order.OrderDate, order.AirwaybillNumber)
+
+		payload := notification.EmailPayload{
+			To:      customerEmail,
+			Subject: "Register Account Confirmation",
+			Body:    bodyEmail,
+		}
+		log.Printf("email %+v", payload)
+		go o.notificationService.SendNotification(payload)
 	}
 
 	data := response.CreateOrderData{

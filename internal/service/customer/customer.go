@@ -6,21 +6,24 @@ import (
 	"ebookstore/internal/model/request"
 	"ebookstore/internal/repository"
 	"ebookstore/internal/service"
+	"ebookstore/utils/config"
 	authentication "ebookstore/utils/middleware"
+	"ebookstore/utils/notification"
 	"errors"
 	"fmt"
+	"log"
 	"strings"
 )
 
 type customerService struct {
-	customerRepository repository.ICustomerRepository
-	// notificationService notification.INotificationService
+	customerRepository  repository.ICustomerRepository
+	notificationService notification.INotificationService
 }
 
-func NewCustomerService(customerRepository repository.ICustomerRepository) service.ICustomerService {
+func NewCustomerService(customerRepository repository.ICustomerRepository, notificationService notification.INotificationService) service.ICustomerService {
 	return &customerService{
-		customerRepository: customerRepository,
-		// notificationService: notificationService,
+		customerRepository:  customerRepository,
+		notificationService: notificationService,
 	}
 }
 
@@ -54,19 +57,21 @@ func (s *customerService) Register(ctx context.Context, customer request.Registe
 	if err != nil {
 		return "", fmt.Errorf("failed to generate token: %s", err.Error())
 	}
+	log.Println("qwe", config.CONFIG_EMAIL_SERVICE)
+	//send notification
+	if config.CONFIG_EMAIL_SERVICE {
+		body := fmt.Sprintf(model.CustomerBodyEmailTemplate, customer.Email)
 
-	// //send notification
-	// if config.CONFIG_EMAIL_SERVICE {
-	// 	body := fmt.Sprintf(model.CustomerBodyEmailTemplate, customer.Email)
+		emailPayload := notification.EmailPayload{
+			To:      customer.Email,
+			Subject: "Order Notification",
+			Body:    body,
+		}
 
-	// 	emailPayload := notification.EmailPayload{
-	// 		To:      customer.Email,
-	// 		Subject: "Order Notification",
-	// 		Body:    body,
-	// 	}
+		log.Printf("email %+v", emailPayload)
 
-	// 	go s.notificationService.SendNotification(emailPayload)
-	// }
+		go s.notificationService.SendNotification(emailPayload)
+	}
 
 	return token, nil
 }
