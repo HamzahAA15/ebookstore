@@ -43,6 +43,8 @@ Create Account first through `{host}/api/customer/register`
 
 ### Customer Endpoints
 
+<details>
+
 **Register a new customer**
 - **URL:** `/api/customer/register`
 - **Method:** `POST`
@@ -63,7 +65,10 @@ Create Account first through `{host}/api/customer/register`
   - Returns a JWT token upon successful login.
   - Returns an error message if login fails.
 
+</details>
+
 ### Book Endpoints
+<details>
 
 **Get list of books**
 - **URL:** `/api/book`
@@ -74,7 +79,10 @@ Create Account first through `{host}/api/customer/register`
   - Returns a list of books with details like title, author, price, etc.
   - Returns an error message if the list of books cannot be fetched.
 
+</details>
+
 ### Order Endpoints
+<details>
 
 **Create a new order**
 - **URL:** `/api/order`
@@ -96,6 +104,8 @@ Create Account first through `{host}/api/customer/register`
 - **Response:**
   - Returns a list of past orders made by the customer.
   - Returns an error message if the order history cannot be fetched.
+
+</details>
 
 ## DB Schema
 <details>
