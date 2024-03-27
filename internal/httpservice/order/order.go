@@ -77,6 +77,16 @@ func isValidCreateOrderReq(req request.CreateOrder) error {
 		return errors.New("items cannot be empty")
 	}
 
+	for _, item := range req.Items {
+		if item.BookID == 0 {
+			return errors.New("book id cannot be empty")
+		}
+
+		if item.Quantity == 0 {
+			return errors.New("quantity cannot be empty")
+		}
+	}
+
 	if req.Address == "" {
 		return errors.New("receiver address cannot be empty")
 	}

@@ -63,7 +63,7 @@ func (s *customerService) Register(ctx context.Context, customer request.Registe
 
 		emailPayload := notification.EmailPayload{
 			To:      customer.Email,
-			Subject: "Order Notification",
+			Subject: "Account Registration Notification",
 			Body:    body,
 		}
 

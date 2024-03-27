@@ -174,7 +174,7 @@ func (o *orderService) CreateOrder(ctx context.Context, req request.CreateOrder)
 
 		payload := notification.EmailPayload{
 			To:      customerEmail,
-			Subject: "Register Account Confirmation",
+			Subject: "Order Confirmation",
 			Body:    bodyEmail,
 		}
 
