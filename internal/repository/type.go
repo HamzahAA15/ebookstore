@@ -3,6 +3,7 @@ package repository
 import (
 	"context"
 	"ebookstore/internal/model"
+	"ebookstore/utils/transactioner"
 	"fmt"
 	"log"
 
@@ -23,11 +24,11 @@ type ICustomerRepository interface {
 }
 
 type IOrderRepository interface {
-	CreateOrder(ctx context.Context, tx *sqlx.Tx, order model.Order) (uint, error)
+	CreateOrder(ctx context.Context, tx transactioner.TxxProvider, order model.Order) (uint, error)
 	GetOrderHistoryByCustomerID(ctx context.Context, customerID uint) ([]model.Order, error)
-	UpdateOrderByOrderID(ctx context.Context, tx *sqlx.Tx, order model.Order) error
+	UpdateOrderByOrderID(ctx context.Context, tx transactioner.TxxProvider, order model.Order) error
 
-	CreateItem(ctx context.Context, tx *sqlx.Tx, item model.Item) error
+	CreateItem(ctx context.Context, tx transactioner.TxxProvider, item model.Item) error
 	GetItemsByOrderID(ctx context.Context, orderID uint) ([]model.Item, error)
 }
 

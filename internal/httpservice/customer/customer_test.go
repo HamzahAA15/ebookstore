@@ -132,10 +132,6 @@ func TestCustomerHandler_Register(t *testing.T) {
 }
 
 func TestCustomerHandler_Login(t *testing.T) {
-	// errReq := request.Login{
-	// 	Email:    "username",
-	// 	Password: "Passw0rd.",
-	// }
 	type fields struct {
 		customerService mocks.ICustomerService
 	}

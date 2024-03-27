@@ -14,7 +14,6 @@ import (
 )
 
 func TestBookHandler_GetBooks(t *testing.T) {
-	// fiberCtx := &fiber.Ctx{}
 	type fields struct {
 		bookService mocks.IBookService
 	}

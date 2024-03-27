@@ -17,9 +17,11 @@ func Test_bookService_GetBooks(t *testing.T) {
 	type fields struct {
 		bookRepository mocks.IBookRepository
 	}
+
 	type args struct {
 		ctx context.Context
 	}
+
 	tests := []struct {
 		name    string
 		fields  fields

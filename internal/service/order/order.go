@@ -19,15 +19,17 @@ var mapBook = make(map[uint]float64)
 
 type orderService struct {
 	orderRepository     repository.IOrderRepository
-	TransactionProvider transactioner.TransactionProvider
+	TransactionProvider transactioner.ITransactionProvider
 	bookRepository      repository.IBookRepository
+	// notificationService notification.INotificationService
 }
 
-func NewOrderService(orderRepository repository.IOrderRepository, bookRepository repository.IBookRepository, tx transactioner.TransactionProvider) service.IOrderService {
+func NewOrderService(orderRepository repository.IOrderRepository, bookRepository repository.IBookRepository, tx transactioner.ITransactionProvider) service.IOrderService {
 	return &orderService{
 		orderRepository:     orderRepository,
 		bookRepository:      bookRepository,
 		TransactionProvider: tx,
+		// notificationService: notificationService,
 	}
 }
 
@@ -88,20 +90,20 @@ func (o *orderService) GetUserOrders(ctx context.Context) ([]response.OrderData,
 	return resp, nil
 }
 
-func (o *orderService) CreateOrder(ctx context.Context, req request.CreateOrder) (response.Order, error) {
+func (o *orderService) CreateOrder(ctx context.Context, req request.CreateOrder) (response.CreateOrderData, error) {
 	var totalPrice float64
 	var totalQuantity int
+	customerID := ctx.Value("id").(uint)
+	// customerEmail := ctx.Value("email").(string)
+	var order model.Order
 
 	tx, err := o.TransactionProvider.NewTransaction(ctx)
 	if err != nil {
-		return response.Order{}, fmt.Errorf("failed to start transaction: %s", err.Error())
+		return response.CreateOrderData{}, fmt.Errorf("failed to start transaction: %s", err.Error())
 	}
 	defer tx.Rollback()
 
 	//insert data to order
-	var order model.Order
-	customerID := ctx.Value("id").(uint)
-
 	if req.ReceiverName == "" {
 		userName := ctx.Value("username").(string)
 		req.ReceiverName = userName
@@ -121,7 +123,7 @@ func (o *orderService) CreateOrder(ctx context.Context, req request.CreateOrder)
 	//create order
 	orderID, err := o.orderRepository.CreateOrder(ctx, tx, order)
 	if err != nil {
-		return response.Order{}, fmt.Errorf("failed to create order: %s", err.Error())
+		return response.CreateOrderData{}, fmt.Errorf("failed to create order: %s", err.Error())
 	}
 
 	for _, item := range req.Items {
@@ -130,7 +132,7 @@ func (o *orderService) CreateOrder(ctx context.Context, req request.CreateOrder)
 		if !ok {
 			book, err := o.bookRepository.GetBookByID(ctx, item.BookID)
 			if err != nil {
-				return response.Order{}, fmt.Errorf("failed to get book: %s", err.Error())
+				return response.CreateOrderData{}, fmt.Errorf("failed to get book: %s", err.Error())
 			}
 
 			bookPrice = book.Price
@@ -146,23 +148,22 @@ func (o *orderService) CreateOrder(ctx context.Context, req request.CreateOrder)
 			BookID:    item.BookID,
 			Quantity:  item.Quantity,
 			OrderID:   orderID,
-			CreatedAt: time.Now().UTC(),
+			CreatedAt: time.Now().UTC().Truncate(time.Minute),
 		})
 		if err != nil {
-			return response.Order{}, fmt.Errorf("failed to create item: %s", err.Error())
+			return response.CreateOrderData{}, fmt.Errorf("failed to create item: %s", err.Error())
 		}
 	}
 
-	var orderUpdate model.Order
-	orderUpdate.ID = orderID
-	orderUpdate.TotalItem = totalQuantity
-	orderUpdate.TotalPrice = totalPrice
-	orderUpdate.UpdatedAt = pq.NullTime{Time: time.Now().UTC(), Valid: true}
+	order.ID = orderID
+	order.TotalItem = totalQuantity
+	order.TotalPrice = totalPrice
+	order.UpdatedAt = pq.NullTime{Time: time.Now().UTC(), Valid: true}
 
 	//update order
-	err = o.orderRepository.UpdateOrderByOrderID(ctx, tx, orderUpdate)
+	err = o.orderRepository.UpdateOrderByOrderID(ctx, tx, order)
 	if err != nil {
-		return response.Order{}, fmt.Errorf("failed to update order: %s", err.Error())
+		return response.CreateOrderData{}, fmt.Errorf("failed to update order: %s", err.Error())
 	}
 
 	data := response.CreateOrderData{
@@ -174,12 +175,10 @@ func (o *orderService) CreateOrder(ctx context.Context, req request.CreateOrder)
 
 	err = tx.Commit()
 	if err != nil {
-		return response.Order{}, fmt.Errorf("failed to commit transaction: %s", err.Error())
+		return response.CreateOrderData{}, fmt.Errorf("failed to commit transaction: %s", err.Error())
 	}
 
-	return response.Order{
-		Data: data,
-	}, nil
+	return data, nil
 }
 
 func generateCustomerReference(orderDate time.Time) string {

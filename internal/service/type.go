@@ -12,7 +12,7 @@ type ICustomerService interface {
 }
 
 type IOrderService interface {
-	CreateOrder(ctx context.Context, req request.CreateOrder) (response.Order, error)
+	CreateOrder(ctx context.Context, req request.CreateOrder) (response.CreateOrderData, error)
 	GetUserOrders(ctx context.Context) ([]response.OrderData, error)
 }
 

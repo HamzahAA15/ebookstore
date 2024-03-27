@@ -1,4 +1,4 @@
-package httpservice
+package order
 
 import (
 	"ebookstore/internal/model/request"
@@ -11,16 +11,12 @@ import (
 )
 
 type OrderHandler struct {
-	customerService service.ICustomerService
-	bookService     service.IBookService
-	orderService    service.IOrderService
+	orderService service.IOrderService
 }
 
-func NewOrderHandler(customerService service.ICustomerService, bookService service.IBookService, orderService service.IOrderService) *OrderHandler {
+func NewOrderHandler(orderService service.IOrderService) *OrderHandler {
 	return &OrderHandler{
-		customerService: customerService,
-		bookService:     bookService,
-		orderService:    orderService,
+		orderService: orderService,
 	}
 }
 
@@ -43,7 +39,8 @@ func (h *OrderHandler) CreateOrder(c *fiber.Ctx) error {
 		})
 	}
 
-	resp, err := h.orderService.CreateOrder(c.Context(), req)
+	ctx := c.Context()
+	data, err := h.orderService.CreateOrder(ctx, req)
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(response.Order{
 			StatusCode: fiber.StatusInternalServerError,
@@ -54,8 +51,8 @@ func (h *OrderHandler) CreateOrder(c *fiber.Ctx) error {
 	customer := c.Locals("username").(string)
 	return c.Status(fiber.StatusOK).JSON(response.Order{
 		StatusCode: fiber.StatusOK,
-		Message:    fmt.Sprintf("successfully created order for customer %s", customer),
-		Data:       resp.Data,
+		Message:    fmt.Sprintf("successfully created order for %s", customer),
+		Data:       data,
 	})
 }
 

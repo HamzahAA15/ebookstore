@@ -4,6 +4,8 @@ import (
 	"context"
 	"ebookstore/internal/model"
 	"ebookstore/internal/repository"
+	"ebookstore/utils/transactioner"
+	"fmt"
 
 	"github.com/jmoiron/sqlx"
 )
@@ -45,7 +47,7 @@ func (o *orderRepository) GetItemsByOrderID(ctx context.Context, OrderID uint) (
 
 }
 
-func (o *orderRepository) CreateItem(ctx context.Context, tx *sqlx.Tx, item model.Item) error {
+func (o *orderRepository) CreateItem(ctx context.Context, tx transactioner.TxxProvider, item model.Item) error {
 	query := "INSERT INTO items (book_id,quantity,order_id,created_at) VALUES ($1,$2,$3,$4)"
 
 	_, err := tx.ExecContext(ctx, query, item.BookID, item.Quantity, item.OrderID, item.CreatedAt)
@@ -56,7 +58,7 @@ func (o *orderRepository) CreateItem(ctx context.Context, tx *sqlx.Tx, item mode
 	return nil
 }
 
-func (o *orderRepository) CreateOrder(ctx context.Context, tx *sqlx.Tx, req model.Order) (uint, error) {
+func (o *orderRepository) CreateOrder(ctx context.Context, tx transactioner.TxxProvider, req model.Order) (uint, error) {
 	var id uint
 	query := `
 	INSERT INTO orders (
@@ -96,7 +98,7 @@ func (o *orderRepository) CreateOrder(ctx context.Context, tx *sqlx.Tx, req mode
 		req.AirwaybillNumber,
 	}
 
-	err := tx.QueryRowxContext(ctx, query, args...).Scan(&id)
+	err := tx.QueryRowContext(ctx, query, args...).Scan(&id)
 	if err != nil {
 		return 0, err
 	}
@@ -133,9 +135,11 @@ func (o *orderRepository) GetOrderHistoryByCustomerID(ctx context.Context, cusom
 	return orders, nil
 }
 
-func (o *orderRepository) UpdateOrderByOrderID(ctx context.Context, tx *sqlx.Tx, order model.Order) error {
+func (o *orderRepository) UpdateOrderByOrderID(ctx context.Context, tx transactioner.TxxProvider, order model.Order) error {
 	query := "UPDATE orders SET total_item = $1, total_price = $2 WHERE id = $3"
-
+	fmt.Printf("%+v", order)
+	println("a", ctx)
+	println("b", tx)
 	_, err := tx.ExecContext(ctx, query, order.TotalItem, order.TotalPrice, order.ID)
 	if err != nil {
 		return err

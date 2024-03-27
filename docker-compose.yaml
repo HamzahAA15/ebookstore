@@ -7,7 +7,7 @@ services:
       - "8080:8080"
     depends_on:
       - postgres
-  
+      
   postgres:
     image: postgres:latest
     container_name: postgres
@@ -20,8 +20,6 @@ services:
       - 5432:5432
     volumes:
       - postgres-data:/data/db #postgres-data:/data/db postgres-data:/var/lib/postgresql/data
-      - ./db/migrations:/docker-entrypoint-initdb.d/migrations
-      - ./db/seeds:/docker-entrypoint-initdb.d/seeds
 
 volumes:
   postgres-data:

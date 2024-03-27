@@ -32,3 +32,14 @@ type Item struct {
 	CreatedAt time.Time   `db:"created_at"`
 	DeletedAt pq.NullTime `db:"deleted_at"`
 }
+
+const OrderBodyEmailTemplate = `<p>Dear %s,</p>
+<p>Your order with ID: %d has been successfully created.</p>
+<p>Order Details:</p>
+<ul>
+  <li>Customer Reference: %s</li>
+  <li>Order Date: %s</li>
+  <li>Airwaybill Number: %s</li>
+</ul>
+<p>Thank you for shopping with us!</p>
+`

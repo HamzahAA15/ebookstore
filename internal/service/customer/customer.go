@@ -14,11 +14,13 @@ import (
 
 type customerService struct {
 	customerRepository repository.ICustomerRepository
+	// notificationService notification.INotificationService
 }
 
 func NewCustomerService(customerRepository repository.ICustomerRepository) service.ICustomerService {
 	return &customerService{
 		customerRepository: customerRepository,
+		// notificationService: notificationService,
 	}
 }
 
@@ -52,6 +54,19 @@ func (s *customerService) Register(ctx context.Context, customer request.Registe
 	if err != nil {
 		return "", fmt.Errorf("failed to generate token: %s", err.Error())
 	}
+
+	// //send notification
+	// if config.CONFIG_EMAIL_SERVICE {
+	// 	body := fmt.Sprintf(model.CustomerBodyEmailTemplate, customer.Email)
+
+	// 	emailPayload := notification.EmailPayload{
+	// 		To:      customer.Email,
+	// 		Subject: "Order Notification",
+	// 		Body:    body,
+	// 	}
+
+	// 	go s.notificationService.SendNotification(emailPayload)
+	// }
 
 	return token, nil
 }

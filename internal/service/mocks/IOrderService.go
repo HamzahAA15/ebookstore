@@ -17,22 +17,22 @@ type IOrderService struct {
 }
 
 // CreateOrder provides a mock function with given fields: ctx, req
-func (_m *IOrderService) CreateOrder(ctx context.Context, req request.CreateOrder) (response.Order, error) {
+func (_m *IOrderService) CreateOrder(ctx context.Context, req request.CreateOrder) (response.CreateOrderData, error) {
 	ret := _m.Called(ctx, req)
 
 	if len(ret) == 0 {
 		panic("no return value specified for CreateOrder")
 	}
 
-	var r0 response.Order
+	var r0 response.CreateOrderData
 	var r1 error
-	if rf, ok := ret.Get(0).(func(context.Context, request.CreateOrder) (response.Order, error)); ok {
+	if rf, ok := ret.Get(0).(func(context.Context, request.CreateOrder) (response.CreateOrderData, error)); ok {
 		return rf(ctx, req)
 	}
-	if rf, ok := ret.Get(0).(func(context.Context, request.CreateOrder) response.Order); ok {
+	if rf, ok := ret.Get(0).(func(context.Context, request.CreateOrder) response.CreateOrderData); ok {
 		r0 = rf(ctx, req)
 	} else {
-		r0 = ret.Get(0).(response.Order)
+		r0 = ret.Get(0).(response.CreateOrderData)
 	}
 
 	if rf, ok := ret.Get(1).(func(context.Context, request.CreateOrder) error); ok {

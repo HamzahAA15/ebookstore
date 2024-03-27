@@ -18,6 +18,8 @@ import (
 
 func InitRoutes(app *fiber.App, db *sqlx.DB) {
 	auth := authentication.AuthMiddleware()
+	// gmailSMTP := gomail.NewDialer(config.CONFIG_SMTP_HOST, config.CONFIG_SMTP_PORT, config.CONFIG_AUTH_EMAIL, config.CONFIG_AUTH_PASSWORD)
+	// notificationService := notification.NewGmailNotification(gmailSMTP)
 
 	bookRepository := postgresql.NewBookRepository(db)
 	bookService := bookService.NewBookService(bookRepository)
@@ -32,6 +34,6 @@ func InitRoutes(app *fiber.App, db *sqlx.DB) {
 	orderRepository := postgresql.NewOrderRepository(db)
 	orderTxProvider := transactioner.NewTransactionProvider(db)
 	orderService := orderService.NewOrderService(orderRepository, bookRepository, orderTxProvider)
-	orderHandler := orderHandler.NewOrderHandler(customerService, bookService, orderService)
+	orderHandler := orderHandler.NewOrderHandler(orderService)
 	orderHandler.SetupRoutes(app, auth)
 }
