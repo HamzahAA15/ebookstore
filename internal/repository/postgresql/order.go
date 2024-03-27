@@ -5,7 +5,6 @@ import (
 	"ebookstore/internal/model"
 	"ebookstore/internal/repository"
 	"ebookstore/utils/transactioner"
-	"fmt"
 
 	"github.com/jmoiron/sqlx"
 )
@@ -137,9 +136,6 @@ func (o *orderRepository) GetOrderHistoryByCustomerID(ctx context.Context, cusom
 
 func (o *orderRepository) UpdateOrderByOrderID(ctx context.Context, tx transactioner.TxxProvider, order model.Order) error {
 	query := "UPDATE orders SET total_item = $1, total_price = $2 WHERE id = $3"
-	fmt.Printf("%+v", order)
-	println("a", ctx)
-	println("b", tx)
 	_, err := tx.ExecContext(ctx, query, order.TotalItem, order.TotalPrice, order.ID)
 	if err != nil {
 		return err

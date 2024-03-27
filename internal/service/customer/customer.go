@@ -11,7 +11,6 @@ import (
 	"ebookstore/utils/notification"
 	"errors"
 	"fmt"
-	"log"
 	"strings"
 )
 
@@ -57,7 +56,7 @@ func (s *customerService) Register(ctx context.Context, customer request.Registe
 	if err != nil {
 		return "", fmt.Errorf("failed to generate token: %s", err.Error())
 	}
-	log.Println("qwe", config.CONFIG_EMAIL_SERVICE)
+
 	//send notification
 	if config.CONFIG_EMAIL_SERVICE {
 		body := fmt.Sprintf(model.CustomerBodyEmailTemplate, customer.Email)
@@ -67,8 +66,6 @@ func (s *customerService) Register(ctx context.Context, customer request.Registe
 			Subject: "Order Notification",
 			Body:    body,
 		}
-
-		log.Printf("email %+v", emailPayload)
 
 		go s.notificationService.SendNotification(emailPayload)
 	}

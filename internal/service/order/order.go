@@ -11,7 +11,6 @@ import (
 	"ebookstore/utils/notification"
 	"ebookstore/utils/transactioner"
 	"fmt"
-	"log"
 	"math/rand"
 	"time"
 
@@ -168,7 +167,7 @@ func (o *orderService) CreateOrder(ctx context.Context, req request.CreateOrder)
 	if err != nil {
 		return response.CreateOrderData{}, fmt.Errorf("failed to update order: %s", err.Error())
 	}
-	log.Println("zxc", config.CONFIG_EMAIL_SERVICE)
+
 	//send email
 	if config.CONFIG_EMAIL_SERVICE {
 		bodyEmail := fmt.Sprintf(model.OrderBodyEmailTemplate, customerEmail, orderID, totalQuantity, totalPrice, order.CustomerReference, order.OrderDate, order.AirwaybillNumber)
@@ -178,7 +177,7 @@ func (o *orderService) CreateOrder(ctx context.Context, req request.CreateOrder)
 			Subject: "Register Account Confirmation",
 			Body:    bodyEmail,
 		}
-		log.Printf("email %+v", payload)
+
 		go o.notificationService.SendNotification(payload)
 	}
 

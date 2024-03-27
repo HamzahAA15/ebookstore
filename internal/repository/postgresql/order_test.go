@@ -396,7 +396,7 @@ func Test_orderRepository_CreateItem(t *testing.T) {
 
 			err = testDB.CreateItem(tt.args.ctx, tx, tt.args.item)
 			if err != nil {
-				println("asd", err.Error())
+				println(err.Error())
 			}
 			assert.Equal(t, tt.wantErr, err != nil)
 		})
