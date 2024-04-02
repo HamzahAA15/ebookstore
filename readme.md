@@ -1,6 +1,6 @@
 # Online Book Store Service
 
-Online Book Store Service is a service that enables you to buy books online, creat customer account, send notification. It uses an persistence postgresql data source.
+Online Book Store Service is a service that enables you to buy books online, creat customer account, send notification. It uses a persistence postgresql data source.
 
 **Note:** View this readme file using preview mode (Ctrl-K + V) or (Command-K + V) for better readability.
 
@@ -51,6 +51,13 @@ Create Account first through `{host}/api/customer/register`
 - **Description:** Registers a new customer account.
 - **Request Body:**
   - Requires user details like email, password, etc.
+  ```json
+    {
+    "username":"hamzah2",
+    "password":"Gotu1234.",
+    "email":"seikoramen@gmail.com"
+    }
+  ```
 - **Response:**
   - Returns a success message & JWT token upon successful registration.
   - Returns an error message if registration fails.
@@ -61,6 +68,12 @@ Create Account first through `{host}/api/customer/register`
 - **Description:** Allows a customer to log in to their account.
 - **Request Body:**
   - Requires user credentials like email and password.
+  ```json
+    {
+    "email":"alfauzi.hamzah@gmail.com",
+    "password":"Gotu1234."
+    }
+  ```
 - **Response:**
   - Returns a JWT token upon successful login.
   - Returns an error message if login fails.
@@ -91,6 +104,26 @@ Create Account first through `{host}/api/customer/register`
 - **Authorization:** Requires authentication bearer token.
 - **Request Body:**
   - Requires details of the order like book IDs, quantity, etc.
+  ```json
+    {
+    "items": [
+        {
+            "book_id": 6,
+            "quantity": 3
+        },
+        {
+            "book_id": 9,
+            "quantity": 1
+        }
+    ],
+    "receiver_name": "Ujang",
+    "address": "123 Main St",
+    "city": "New York",
+    "district": "Manhattan",
+    "postal_code": "10001",
+    "shipper": "JNE"
+    } 
+  ```
 - **Response:**
   - Returns a success message upon successful order creation.
   - Returns an error message if order creation fails.
